@@ -41,11 +41,11 @@ def get_authenticated_service():
   	credentials = flow.run_console()
   	return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 
-def search_videos(youtube, args):
+def search_videos(args, youtube):
 
 	# calling the search.list method to 
 	# retrieve youtube search results 
-	search_keyword = youtube.search().list(q = query, part = "id, snippet", maxResults = max_results).execute()
+	search_keyword = youtube.search().list(q=args.title, part="id, snippet", maxResults=5).execute()
 
 	# extracting the results from search response 
 	results = search_keyword.get("items", []) 
@@ -59,14 +59,12 @@ def search_videos(youtube, args):
 	for result in results: 
 		# video result object 
 		if result['id']['kind'] == "youtube# video": 
-			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"], 
-							result["id"]["videoId"], result['snippet']['description'], 
-							result['snippet']['thumbnails']['default']['url'])) 
+			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"])) 
 
 	print("Videos:\n", "\n".join(videos), "\n") 
 
     
-def add_playlist(args, youtube):
+def new_playlist(args, youtube):
   
   	body = dict(
     	snippet=dict(
@@ -86,12 +84,12 @@ def add_playlist(args, youtube):
   	print 'New playlist ID: %s' % playlists_insert_response['id']
   
 if __name__ == '__main__':
+
+	FUNCTION_MAP = {'searchVideos': search_videos,
+					'newPlaylist': new_playlist}
            
-  	parser = argparse.ArgumentParser()
-  	#parser.add_argument('-s', '--search', action=search_videos)
-  	parser.add_argument('-p', '--playlist', action="store_true",
-	  	help='playlist or nah')
-	#parser.add_argument('-f', '--function', action=)
+	parser = argparse.ArgumentParser()
+	parser.add_argument('function', choices=FUNCTION_MAP.keys())
   	parser.add_argument('-t', '--title',
       	default='Test Playlist',
       	help='The title of the new playlist.')
@@ -103,9 +101,10 @@ if __name__ == '__main__':
   	print(args)
 
 	youtube = get_authenticated_service()
+
 	try:
-		if args.playlist == 1:
-			add_playlist(args, youtube)
-			#globals()[sys.argv[1]](sys.argv[2], youtube)
+		func = FUNCTION_MAP[args.function]
+		func(args, youtube)
+		#globals()[sys.argv[1]](sys.argv[2], youtube)
 	except HttpError, e:
 		print 'An HTTP error %d occurred:\n%s' % (e.resp.status, e.content)
