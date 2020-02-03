@@ -54,6 +54,7 @@ def search_videos(youtube, args):
 	# channel, playlist metadata 
 	videos = [] 
 
+	#TODO: Fix the SEARCH function to return JSON format of video results
 	# extracting required info from each result object 
 	for result in results: 
 		# video result object 
