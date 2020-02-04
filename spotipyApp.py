@@ -45,13 +45,13 @@ playlist1 = spotipyObj.playlist(apiTest, market=None)
 total = playlist1['tracks']['total']
 print(total)
 
-tracks = playlist1['tracks']['items']
+tracks = playlist1['tracks']['items']   # List of all tracks
 
 playlistDict = {}
 
 # Print ALL names of Tracks in Playlist
 for i in range (0, total):
-    name = tracks[i]['track']['name']
+    name = tracks[i]['track']['name']   # Find i'th track in list
     #print(name)
     artists = tracks[i]['track']['artists']
     # Print ALL artists on the Track
@@ -62,7 +62,7 @@ for i in range (0, total):
 
 ##
 #print(json.dumps(user, sort_keys=True, indent=4))
-#print(json.dumps(playlist1, sort_keys=True, indent=4))
+print(json.dumps(playlist1, sort_keys=True, indent=4))
 
 # Write to CSV File
 with open('tracks.csv', mode='wb') as myFile:

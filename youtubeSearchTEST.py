@@ -8,6 +8,7 @@
 import argparse
 import os
 import sys
+import json
 
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
@@ -34,6 +35,8 @@ CLIENT_SECRETS_FILE = 'client_secret_343978715528-1hsginveor4ornac0trgv6a5qkr3tf
 SCOPES = ['https://www.googleapis.com/auth/youtube']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
+
+MAX_RESULTS = 5
     
 # Authorize the request and store authorization credentials.
 def get_authenticated_service():
@@ -41,29 +44,29 @@ def get_authenticated_service():
   	credentials = flow.run_console()
   	return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 
+#TODO: search is complete, now COMBINE to read EACH CSV row, get top result (not channel), add to playlist
+
+# Search top MAX_RESULTS on YouTube for videos relevent to -t=KEYWORD
 def search_videos(args, youtube):
 
 	# calling the search.list method to 
 	# retrieve youtube search results 
-	search_keyword = youtube.search().list(q=args.title, part="id, snippet", maxResults=5).execute()
+	search_keyword = youtube.search().list(q=args.title, part="id, snippet", maxResults=MAX_RESULTS).execute()
 
 	# extracting the results from search response 
-	results = search_keyword.get("items", []) 
+	results = search_keyword.get("items", []) 	# RETURNS: List of Dictionaries (List[{channel}, {res1}, {res2}, ...])
 
-	# empty list to store video, 
-	# channel, playlist metadata 
+	# empty list to store video
 	videos = [] 
 
-	#TODO: Fix the SEARCH function to return JSON format of video results
-	# extracting required info from each result object 
-	for result in results: 
-		# video result object 
-		if result['id']['kind'] == "youtube# video": 
-			videos.append("% s (% s) (% s) (% s)" % (result["snippet"]["title"])) 
+	# resDict = 1 Element of list 'results', i.e. results[0] = channel, results[1] = 1st results, etc...
+	for resDict in results:
+		if resDict["id"]["kind"] == "youtube#video":
+			result = resDict["snippet"]["title"].encode("utf-8")
+			videos.append(str(result))
+	print(videos)	
 
-	print("Videos:\n", "\n".join(videos), "\n") 
-
-    
+# Create a new playlist on YouTube account with title -t=TITLE and description -d=DESCRIPTION
 def new_playlist(args, youtube):
   
   	body = dict(
