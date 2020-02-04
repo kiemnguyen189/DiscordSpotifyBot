@@ -21,7 +21,12 @@ username = sys.argv[1]
 # PLAYLISTS
 apiTest = "https://open.spotify.com/playlist/4f0xpQWvQgYiR2pqFC3K1s?si=rF6FVA1UTxyTeahfj7rGBQ"
 best = "https://open.spotify.com/playlist/1alXxqzm5q3cQKpMHQOLsF?si=LObRa4RpRTqddLwQC7fKlg"
+rockin = "https://open.spotify.com/playlist/179lDQh3URgZCQTR52wtIC?si=VOXiZUp9RVqqyfrzIenf8g"
 songMumboJumbo = "https://open.spotify.com/playlist/2ZF3YfrGT27ubjCse2VMZK?si=jE8gCh1dSy-GqAK0IZxrGw"
+traps = "https://open.spotify.com/playlist/0O3iWP5eqi8cow3bmSwGoq?si=dyX4s9-gSWOUvBI81K1h3w"
+
+PLAYLIST_NAME = traps
+NEW_FILENAME = 'tracks2.csv'
 
 # Erase cache and prompt for user permission
 try:
@@ -41,7 +46,7 @@ user = spotipyObj.current_user()
 displayName = user['display_name']
 followers = user['followers']['total']
 
-playlist1 = spotipyObj.playlist(apiTest, market=None)
+playlist1 = spotipyObj.playlist(PLAYLIST_NAME, market=None)
 total = playlist1['tracks']['total']
 print(total)
 
@@ -65,7 +70,7 @@ for i in range (0, total):
 print(json.dumps(playlist1, sort_keys=True, indent=4))
 
 # Write to CSV File
-with open('tracks.csv', mode='wb') as myFile:
+with open(NEW_FILENAME, mode='wb') as myFile:
     fieldNames = ['name', 'artists']
     tracksWriter = csv.DictWriter(myFile, fieldnames=fieldNames)
     tracksWriter.writeheader()
