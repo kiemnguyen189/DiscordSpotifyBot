@@ -3,7 +3,7 @@
 # This code sample creates a private playlist in the authorizing user's
 # YouTube channel.
 # Usage:
-#   python youtubeSearchTEST.py --title=<TITLE> --description=<DESCRIPTION>
+#   python youtubeSearchTEST.py function --title=<TITLE> --description=<DESCRIPTION>
 
 import argparse
 import os
@@ -47,27 +47,63 @@ def get_authenticated_service():
 #TODO: search is complete, now COMBINE to read EACH CSV row, get top result (not channel), add to playlist
 
 # Search top MAX_RESULTS on YouTube for videos relevent to -t=KEYWORD
-def search_videos(args, youtube):
+def searchVideos(args, youtube):
+
+	print(args)
 
 	# calling the search.list method to 
 	# retrieve youtube search results 
 	search_keyword = youtube.search().list(q=args.title, part="id, snippet", maxResults=MAX_RESULTS).execute()
 
 	# extracting the results from search response 
-	results = search_keyword.get("items", []) 	# RETURNS: List of Dictionaries (List[{channel}, {res1}, {res2}, ...])
+	results = search_keyword.get('items', []) 	# RETURNS: List of Dictionaries (List[{channel}, {res1}, {res2}, ...])
+	print(json.dumps(results, sort_keys=True, indent=4))
 
 	# empty list to store video
 	videos = [] 
+	videosDict = {}
 
 	# resDict = 1 Element of list 'results', i.e. results[0] = channel, results[1] = 1st results, etc...
 	for resDict in results:
-		if resDict["id"]["kind"] == "youtube#video":
-			result = resDict["snippet"]["title"].encode("utf-8")
+		if resDict['id']['kind'] == 'youtube#video':
+			result = resDict['snippet']['title'].encode('utf-8')
 			videos.append(str(result))
-	print(videos)	
+			videosDict[result] = resDict['id']['videoId']
+	print(videos)
+	print(videosDict)	
+	return videosDict
+
+#"""
+# Add list of songs to a playlist
+def addToPlaylist(args, youtube):
+
+	print(args)
+
+	# Retrieve playlistID 
+	playlist = newPlaylist(args, youtube)
+	videoDict = searchVideos(args, youtube)
+
+	# Add a video to playlist
+	body = dict(
+		snippet=dict(
+			playlistId=playlist,
+			resourceId=dict(
+				kind='youtube#video',
+				videoId=list(videoDict.keys())[0]
+			)
+		)
+	)
+
+	insertVideos = youtube.playlistItems().insert(
+		part='snippet',
+		body=body
+	)
+#"""
 
 # Create a new playlist on YouTube account with title -t=TITLE and description -d=DESCRIPTION
-def new_playlist(args, youtube):
+def newPlaylist(args, youtube):
+
+	print(args)
   
   	body = dict(
     	snippet=dict(
@@ -85,11 +121,13 @@ def new_playlist(args, youtube):
   	).execute()
 
   	print 'New playlist ID: %s' % playlists_insert_response['id']
+	return playlists_insert_response['id']
   
 if __name__ == '__main__':
 
-	FUNCTION_MAP = {'searchVideos': search_videos,
-					'newPlaylist': new_playlist}
+	FUNCTION_MAP = {'searchVideos': searchVideos,
+					'newPlaylist': newPlaylist,
+					'addToPlaylist': addToPlaylist}
            
 	parser = argparse.ArgumentParser()
 	parser.add_argument('function', choices=FUNCTION_MAP.keys())
