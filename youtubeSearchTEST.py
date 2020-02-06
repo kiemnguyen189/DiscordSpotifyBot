@@ -61,48 +61,19 @@ def searchVideos(args, youtube):
 	print(json.dumps(results, sort_keys=True, indent=4))
 
 	# empty list to store video
-	videos = [] 
+	#videos = [] 
 	videosDict = {}
 
 	# resDict = 1 Element of list 'results', i.e. results[0] = channel, results[1] = 1st results, etc...
 	for resDict in results:
 		if resDict['id']['kind'] == 'youtube#video':
 			result = resDict['snippet']['title'].encode('utf-8')
-			videos.append(str(result))
+			#videos.append(str(result))
 			videosDict[result] = str(resDict['id']['videoId'])
-	print(videos)
-	print(videosDict)	
+	#print(videos)
+	#print(videosDict)	
 	return videosDict
 
-#"""
-# Add list of songs to a playlist
-def addToPlaylist(args, youtube):
-
-	print(args)
-
-	# Retrieve playlistID 
-	playlist = newPlaylist(args, youtube)
-	videoDict = searchVideos(args, youtube)
-	print(playlist)
-	print(videoDict)
-	print(list(videoDict.values())[0])
-
-	# Add a video to playlist
-	body = dict(
-		snippet=dict(
-			playlistId=playlist,
-			resourceId=dict(
-				kind='youtube#video',
-				videoId=list(videoDict.values())[0]
-			)
-		)
-	)
-
-	insertVideos = youtube.playlistItems().insert(
-		part='snippet',
-		body=body
-	).execute()
-#"""
 
 # Create a new playlist on YouTube account with title -t=TITLE and description -d=DESCRIPTION
 def newPlaylist(args, youtube):
@@ -126,9 +97,40 @@ def newPlaylist(args, youtube):
 
   	print 'New playlist ID: %s' % playlists_insert_response['id']
 	return playlists_insert_response['id']
-  
+
+
+#"""
+# Add list of songs to a playlist
+def addToPlaylist(args, youtube):
+
+	print(args)
+
+	# Retrieve playlistID 
+	playlist = newPlaylist(args, youtube)
+	videoDict = searchVideos(args, youtube)
+	print(list(videoDict.values())[0])	# Video ID
+
+	# Add a video to playlist
+	body = dict(
+		snippet=dict(
+			playlistId=playlist,
+			resourceId=dict(
+				kind='youtube#video',
+				videoId=list(videoDict.values())[0]
+			)
+		)
+	)
+
+	insertVideos = youtube.playlistItems().insert(
+		part='snippet',
+		body=body
+	).execute()
+#"""
+
+
 if __name__ == '__main__':
 
+	# Dictionary of function commands to functions
 	FUNCTION_MAP = {'searchVideos': searchVideos,
 					'newPlaylist': newPlaylist,
 					'addToPlaylist': addToPlaylist}
@@ -150,6 +152,5 @@ if __name__ == '__main__':
 	try:
 		func = FUNCTION_MAP[args.function]
 		func(args, youtube)
-		#globals()[sys.argv[1]](sys.argv[2], youtube)
 	except HttpError, e:
 		print 'An HTTP error %d occurred:\n%s' % (e.resp.status, e.content)
