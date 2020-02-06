@@ -54,6 +54,7 @@ def searchVideos(args, youtube):
 	# calling the search.list method to 
 	# retrieve youtube search results 
 	search_keyword = youtube.search().list(q=args.title, part="id, snippet", maxResults=MAX_RESULTS).execute()
+	#all = youtube.search().list(q=args.title, part=)
 
 	# extracting the results from search response 
 	results = search_keyword.get('items', []) 	# RETURNS: List of Dictionaries (List[{channel}, {res1}, {res2}, ...])
@@ -68,7 +69,7 @@ def searchVideos(args, youtube):
 		if resDict['id']['kind'] == 'youtube#video':
 			result = resDict['snippet']['title'].encode('utf-8')
 			videos.append(str(result))
-			videosDict[result] = resDict['id']['videoId']
+			videosDict[result] = str(resDict['id']['videoId'])
 	print(videos)
 	print(videosDict)	
 	return videosDict
@@ -82,6 +83,9 @@ def addToPlaylist(args, youtube):
 	# Retrieve playlistID 
 	playlist = newPlaylist(args, youtube)
 	videoDict = searchVideos(args, youtube)
+	print(playlist)
+	print(videoDict)
+	print(list(videoDict.values())[0])
 
 	# Add a video to playlist
 	body = dict(
@@ -89,7 +93,7 @@ def addToPlaylist(args, youtube):
 			playlistId=playlist,
 			resourceId=dict(
 				kind='youtube#video',
-				videoId=list(videoDict.keys())[0]
+				videoId=list(videoDict.values())[0]
 			)
 		)
 	)
@@ -97,7 +101,7 @@ def addToPlaylist(args, youtube):
 	insertVideos = youtube.playlistItems().insert(
 		part='snippet',
 		body=body
-	)
+	).execute()
 #"""
 
 # Create a new playlist on YouTube account with title -t=TITLE and description -d=DESCRIPTION
