@@ -9,6 +9,7 @@ import argparse
 import os
 import sys
 import json
+import csv
 
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
@@ -46,8 +47,8 @@ def get_authenticated_service():
 
 #TODO: search is complete, now COMBINE to read EACH CSV row, get top result (not channel), add to playlist
 
-# Search top MAX_RESULTS on YouTube for videos relevent to -t=KEYWORD
-def searchVideos(args, youtube):
+# Search top MAX_RESULTS on YouTube for videos relevent to -t=KEYWORD using terminal
+def searchVideosCMD(args, youtube):
 
 	print(args)
 
@@ -73,6 +74,59 @@ def searchVideos(args, youtube):
 	#print(videos)
 	#print(videosDict)	
 	return videosDict
+
+# Searches videos using keyword argument
+def searchVideo(word):
+	# calling the search.list method to 
+	# retrieve youtube search results 
+	search_keyword = youtube.search().list(q=word, part="id, snippet", maxResults=2).execute()
+
+	# extracting the results from search response 
+	results = search_keyword.get('items', []) 	# RETURNS: List of Dictionaries (List[{channel}, {res1}])
+	print(json.dumps(results, sort_keys=True, indent=4))
+
+	# empty list to store video
+	videosDict = {}
+
+	# resDict = 1 Element of list 'results', i.e. results[0] = channel, results[1] = 1st results, etc...
+	
+	if results[1]['id']['kind'] == 'youtube#video':
+		result = results['snippet']['title'].encode('utf-8')
+		videosDict[result] = str(results['id']['videoId'])
+	
+	return videosDict
+
+# Search top video for each CSV item
+def searchCSV(args, youtube):
+
+	playlist = newPlaylist(args, youtube)
+
+	with open(str(args.title)+".csv") as csvFile:
+		reader = csv.reader(csvFile, delimiter=',')
+		count = 0
+		for row in reader:
+			if count != 0:
+				vidId = searchVideo(row[0] + " " + row[1])
+				print(vidId)
+				body = createBody(playlist, vidId)
+				insertVideos = youtube.playlistItems().insert(
+					part='snippet',
+					body=body
+				).execute()
+			count += 1
+
+# Creates a body Dict structure for adding to a playlist
+def createBody(playlist, vidId):
+	body = dict(
+		snippet=dict(
+			playlistId=playlist,
+			resourceId=dict(
+				kind='youtube#video',
+				videoId=list(vidId.values())[0]
+			)
+		)
+	)
+	return body
 
 
 # Create a new playlist on YouTube account with title -t=TITLE and description -d=DESCRIPTION
@@ -128,12 +182,19 @@ def addToPlaylist(args, youtube):
 #"""
 
 
+def newAndAdd(args, youtube):
+	print("")
+
+
+
 if __name__ == '__main__':
 
 	# Dictionary of function commands to functions
-	FUNCTION_MAP = {'searchVideos': searchVideos,
+	FUNCTION_MAP = {'searchVideosCMD': searchVideosCMD,
 					'newPlaylist': newPlaylist,
-					'addToPlaylist': addToPlaylist}
+					'addToPlaylist': addToPlaylist,
+					'newAndAdd': newAndAdd,
+					'searchCSV': searchCSV}
            
 	parser = argparse.ArgumentParser()
 	parser.add_argument('function', choices=FUNCTION_MAP.keys())

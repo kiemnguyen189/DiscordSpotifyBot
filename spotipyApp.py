@@ -24,9 +24,10 @@ best = "https://open.spotify.com/playlist/1alXxqzm5q3cQKpMHQOLsF?si=LObRa4RpRTqd
 rockin = "https://open.spotify.com/playlist/179lDQh3URgZCQTR52wtIC?si=VOXiZUp9RVqqyfrzIenf8g"
 songMumboJumbo = "https://open.spotify.com/playlist/2ZF3YfrGT27ubjCse2VMZK?si=jE8gCh1dSy-GqAK0IZxrGw"
 traps = "https://open.spotify.com/playlist/0O3iWP5eqi8cow3bmSwGoq?si=dyX4s9-gSWOUvBI81K1h3w"
+babygravy = "https://open.spotify.com/album/1oxxysQmylUXuxzSdHlqUc?si=Y2Bz0P5JRTarErGCwHgt4A"
 
-PLAYLIST_NAME = traps
-NEW_FILENAME = 'tracks2.csv'
+PLAYLIST_NAME = babygravy
+NEW_FILENAME = 'babygravy.csv'
 
 # Erase cache and prompt for user permission
 try:
